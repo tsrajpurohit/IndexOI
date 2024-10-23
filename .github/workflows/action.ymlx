@@ -1,0 +1,66 @@
+name: Run Scraper_Save File
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: List files before running script
+        run: |
+          echo "Listing files before running the script"
+          ls -la
+
+      - name: Run scraping script
+        run: |
+          python MarketAlert_NLx.py
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+
+      - name: List files after running script
+        run: |
+          echo "Listing files after running the script"
+          ls -la
+
+      - name: Check Git status
+        run: |
+          git status
+
+      - name: Commit files
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add -A
+          if ! git diff-index --quiet HEAD; then
+            git commit -m "Updated logs"
+          fi
+
+      - name: Push changes
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: main 
+
+      - name: Upload JSON files as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: rss-feeds-json
+          path: "*.json"
