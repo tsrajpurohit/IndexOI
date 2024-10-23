@@ -5,13 +5,12 @@ import gspread
 import pandas as pd
 from nsepython import *
 
+
 # Define the scope for Google Sheets API
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 
-# Load credentials from environment variable (GitHub Secrets)
-credentials_json = os.environ['GOOGLE_SHEETS_CREDENTIALS']
-credentials_dict = json.loads(credentials_json)
-credentials = ServiceAccountCredentials.from_json_keyfile_dict(credentials_dict, scope)
+# Load credentials from the JSON file
+credentials = ServiceAccountCredentials.from_json_keyfile_name("C:/Users/user/Downloads/Compressed/credentials.json", scope)
 
 # Authorize the client
 client = gspread.authorize(credentials)
@@ -83,3 +82,4 @@ additional_info_sheet.update([
 ])
 
 print("Data saved to Google Sheets successfully!")
+
