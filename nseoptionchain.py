@@ -1,18 +1,20 @@
 import os
 from oauth2client.service_account import ServiceAccountCredentials
 import gspread
-import pandas as pd
-from nsepython import *
+
+# Get the credentials path from an environment variable
+credentials_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+
+if not credentials_path:
+    raise ValueError("Environment variable 'GOOGLE_APPLICATION_CREDENTIALS' not set.")
 
 # Define the scope for Google Sheets API
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-
-# Use the relative path for credentials
-credentials_path = os.path.join(os.path.dirname(__file__), "../credentials/credentials.json")
 credentials = ServiceAccountCredentials.from_json_keyfile_name(credentials_path, scope)
 
 # Authorize the client
 client = gspread.authorize(credentials)
+
 
 # The rest of the code remains the same...
 # Create or open the Google Sheet
