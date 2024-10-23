@@ -1,20 +1,20 @@
 import os
-import json
 from oauth2client.service_account import ServiceAccountCredentials
 import gspread
 import pandas as pd
 from nsepython import *
 
-
 # Define the scope for Google Sheets API
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 
-# Load credentials from the JSON file
-credentials = ServiceAccountCredentials.from_json_keyfile_name("C:/Users/user/Downloads/Compressed/credentials.json", scope)
+# Use the relative path for credentials
+credentials_path = os.path.join(os.path.dirname(__file__), "../credentials/credentials.json")
+credentials = ServiceAccountCredentials.from_json_keyfile_name(credentials_path, scope)
 
 # Authorize the client
 client = gspread.authorize(credentials)
 
+# The rest of the code remains the same...
 # Create or open the Google Sheet
 try:
     # Open an existing Google Sheet
