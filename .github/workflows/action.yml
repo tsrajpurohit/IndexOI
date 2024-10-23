@@ -30,11 +30,10 @@ jobs:
 
       - name: Run scraping script
         run: |
-          python MarketAlert_NLx.py
+          python nseoptionchain.py
         env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-
+            GOOGLE_SHEETS_CREDENTIALS: ${{ secrets.GOOGLE_SHEETS_CREDENTIALS }}
+        
       - name: List files after running script
         run: |
           echo "Listing files after running the script"
