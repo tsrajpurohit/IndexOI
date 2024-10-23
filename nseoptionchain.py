@@ -3,10 +3,10 @@ from oauth2client.service_account import ServiceAccountCredentials
 import gspread
 
 # Get the credentials path from an environment variable
-credentials_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+credentials_path = os.getenv('GOOGLE_SHEETS_CREDENTIALS)
 
 if not credentials_path:
-    raise ValueError("Environment variable 'GOOGLE_APPLICATION_CREDENTIALS' not set.")
+    raise ValueError("Environment variable 'GOOGLE_SHEETS_CREDENTIALS' not set.")
 
 # Define the scope for Google Sheets API
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
