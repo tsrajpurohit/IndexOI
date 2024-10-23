@@ -3,7 +3,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 import gspread
 
 # Get the credentials path from an environment variable
-credentials_path = os.getenv('GOOGLE_SHEETS_CREDENTIALS)
+credentials_path = os.getenv('GOOGLE_SHEETS_CREDENTIALS')
 
 if not credentials_path:
     raise ValueError("Environment variable 'GOOGLE_SHEETS_CREDENTIALS' not set.")
