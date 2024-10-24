@@ -24,4 +24,4 @@ jobs:
       - name: Run script
         env:
           GOOGLE_SHEETS_CREDENTIALS: ${{ secrets.GOOGLE_SHEETS_CREDENTIALS }}  # Ensure this matches the secret's name in GitHub
-        run: python nseoptionchain.py
+        run: python nseoptionchain.py 
