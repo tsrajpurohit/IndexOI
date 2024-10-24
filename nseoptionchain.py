@@ -11,79 +11,82 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 # Define the scope for Google Sheets API
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 
-# Load credentials from the JSON file specified in the environment variable
-credentials_path = os.getenv("GOOGLE_SHEETS_CREDENTIALS", "credentials.json")
+# Get the absolute path of the current directory and specify the credentials file
+current_directory = os.path.dirname(os.path.abspath(__file__))  # Get the current directory
+credentials_path = os.path.join(current_directory, "credentials.json")  # Combine with the filename
 logging.info(f"Using credentials from: {credentials_path}")
 
-try:
-    credentials = ServiceAccountCredentials.from_json_keyfile_name(credentials_path, scope)
-except Exception as e:
-    logging.error(f"Failed to load credentials: {e}")
-    raise
+# Function to authorize Google Sheets client
+def authorize_google_sheets(credentials_path, scope):
+    try:
+        credentials = ServiceAccountCredentials.from_json_keyfile_name(credentials_path, scope)
+        return gspread.authorize(credentials)
+    except Exception as e:
+        logging.error(f"Failed to load credentials: {e}")
+        raise
 
-# Authorize the client
-client = gspread.authorize(credentials)
+# Function to create or open a Google Sheet
+def create_or_open_sheet(client, sheet_name):
+    try:
+        return client.open(sheet_name)
+    except gspread.SpreadsheetNotFound:
+        logging.info(f"Creating a new Google Sheet: {sheet_name}")
+        return client.create(sheet_name)
 
-# Create or open the Google Sheet
-try:
-    sheet = client.open("Pankaj_Power")
-except gspread.SpreadsheetNotFound:
-    logging.info("Creating a new Google Sheet: Pankaj_Power")
-    sheet = client.create("Pankaj_Power")
+# Function to create or get a worksheet
+def get_or_create_worksheet(sheet, title, rows="1000", cols="20"):
+    try:
+        return sheet.worksheet(title)
+    except gspread.WorksheetNotFound:
+        logging.info(f"Adding worksheet: {title}")
+        return sheet.add_worksheet(title=title, rows=rows, cols=cols)
 
-# Open the first sheet (worksheet) for additional info
-try:
-    additional_info_sheet = sheet.worksheet("Additional Info")
-except gspread.WorksheetNotFound:
-    logging.info("Adding worksheet: Additional Info")
-    additional_info_sheet = sheet.add_worksheet(title="Additional Info", rows="1000", cols="20")
+# Function to fetch OI data and update the corresponding Google Sheet
+def fetch_and_update_oi_data(sheet, index_name):
+    try:
+        oi_data, ltp, crontime = oi_chain_builder(index_name, "latest", "full")
+        oi_data_df = pd.DataFrame(oi_data)
+        
+        # Update the respective worksheet
+        sheet_name = f"{index_name} OI Data"
+        worksheet = get_or_create_worksheet(sheet, sheet_name)
+        
+        # Clear existing data and upload new data
+        worksheet.clear()
+        worksheet.update([oi_data_df.columns.values.tolist()] + oi_data_df.fillna("").values.tolist())
+        
+        logging.info(f"{index_name} OI Data fetched successfully.")
+        logging.info(f"LTP {index_name}: {ltp}")
+        logging.info(f"CronTime {index_name}: {crontime}")
+        
+        return ltp, crontime
+    except Exception as e:
+        logging.error(f"Failed to fetch and update OI data for {index_name}: {e}")
+        return None, None
 
-# Get Open Interest (OI) data from NSE for NIFTY
-oi_data_nifty, ltp_nifty, crontime_nifty = oi_chain_builder("NIFTY", "latest", "full")
-oi_data_nifty_df = pd.DataFrame(oi_data_nifty)
+# Main execution flow
+if __name__ == "__main__":
+    # Authorize the client
+    client = authorize_google_sheets(credentials_path, scope)
 
-# Add or open a new sheet for NIFTY OI data
-try:
-    nifty_sheet = sheet.worksheet("NIFTY OI Data")
-except gspread.WorksheetNotFound:
-    logging.info("Adding worksheet: NIFTY OI Data")
-    nifty_sheet = sheet.add_worksheet(title="NIFTY OI Data", rows="1000", cols="20")
+    # Create or open the main Google Sheet
+    sheet = create_or_open_sheet(client, "Pankaj_Power")
 
-# Upload NIFTY OI data
-nifty_sheet.clear()
-nifty_sheet.update([oi_data_nifty_df.columns.values.tolist()] + oi_data_nifty_df.fillna("").values.tolist())
+    # Open or create the "Additional Info" worksheet
+    additional_info_sheet = get_or_create_worksheet(sheet, "Additional Info")
 
-# Print NIFTY OI data, LTP, and CronTime
-logging.info("NIFTY OI Data fetched successfully.")
-logging.info(f"LTP NIFTY: {ltp_nifty}")
-logging.info(f"CronTime NIFTY: {crontime_nifty}")
+    # Fetch and update OI data for NIFTY
+    ltp_nifty, crontime_nifty = fetch_and_update_oi_data(sheet, "NIFTY")
 
-# Get Open Interest (OI) data from NSE for BANKNIFTY
-oi_data_banknifty, ltp_banknifty, crontime_banknifty = oi_chain_builder("BANKNIFTY", "latest", "full")
-oi_data_banknifty_df = pd.DataFrame(oi_data_banknifty)
+    # Fetch and update OI data for BANKNIFTY
+    ltp_banknifty, crontime_banknifty = fetch_and_update_oi_data(sheet, "BANKNIFTY")
 
-# Add or open a new sheet for BANKNIFTY OI data
-try:
-    banknifty_sheet = sheet.worksheet("BANKNIFTY OI Data")
-except gspread.WorksheetNotFound:
-    logging.info("Adding worksheet: BANKNIFTY OI Data")
-    banknifty_sheet = sheet.add_worksheet(title="BANKNIFTY OI Data", rows="1000", cols="20")
+    # Clear and update additional info
+    additional_info_sheet.clear()
+    additional_info_sheet.update([
+        ["Index", "LTP", "CronTime"],
+        ["NIFTY", ltp_nifty, crontime_nifty],
+        ["BANKNIFTY", ltp_banknifty, crontime_banknifty]
+    ])
 
-# Upload BANKNIFTY OI data
-banknifty_sheet.clear()
-banknifty_sheet.update([oi_data_banknifty_df.columns.values.tolist()] + oi_data_banknifty_df.fillna("").values.tolist())
-
-# Print BANKNIFTY OI data, LTP, and CronTime
-logging.info("BANKNIFTY OI Data fetched successfully.")
-logging.info(f"LTP BANKNIFTY: {ltp_banknifty}")
-logging.info(f"CronTime BANKNIFTY: {crontime_banknifty}")
-
-# Clear and update additional info
-additional_info_sheet.clear()
-additional_info_sheet.update([
-    ["Index", "LTP", "CronTime"],
-    ["NIFTY", ltp_nifty, crontime_nifty],
-    ["BANKNIFTY", ltp_banknifty, crontime_banknifty]
-])
-
-logging.info("Data saved to Google Sheets successfully!")
+    logging.info("Data saved to Google Sheets successfully!")
