@@ -27,7 +27,7 @@ jobs:
           echo "$GOOGLE_CREDENTIALS_JSON" > credentials.json
           export GOOGLE_CREDENTIALS_PATH=$PWD/credentials.json
         env:
-          GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
+          GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_Path }}
 
       - name: Run the Python script
         run: |
