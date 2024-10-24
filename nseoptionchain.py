@@ -1,35 +1,48 @@
-import os
-from oauth2client.service_account import ServiceAccountCredentials
 import gspread
-
-# Get the credentials path from an environment variable
-credentials_path = os.getenv('GOOGLE_SHEETS_CREDENTIALS')
-
-if not credentials_path:
-    raise ValueError("Environment variable 'GOOGLE_SHEETS_CREDENTIALS' not set.")
+from oauth2client.service_account import ServiceAccountCredentials
+import pandas as pd
+from nsepython import *
+import os
 
 # Define the scope for Google Sheets API
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+
+# Load credentials from environment variable
+# You should store your Google API credentials file path in an environment variable
+credentials_path = os.getenv('GOOGLE_CREDENTIALS_PATH')
+
+if not credentials_path:
+    raise ValueError("Google API credentials path not found. Set the 'GOOGLE_CREDENTIALS_PATH' environment variable.")
+
 credentials = ServiceAccountCredentials.from_json_keyfile_name(credentials_path, scope)
 
 # Authorize the client
 client = gspread.authorize(credentials)
 
-
-# The rest of the code remains the same...
 # Create or open the Google Sheet
+sheet_name = "Pankaj_Power"
 try:
     # Open an existing Google Sheet
-    sheet = client.open("Pankaj_Power")
+    sheet = client.open(sheet_name)
 except gspread.SpreadsheetNotFound:
     # If the sheet doesn't exist, create a new one
-    sheet = client.create("Pankaj_Power")
+    sheet = client.create(sheet_name)
 
-# Open the first sheet (worksheet) for additional info
-try:
-    additional_info_sheet = sheet.worksheet("Additional Info")
-except gspread.WorksheetNotFound:
-    additional_info_sheet = sheet.add_worksheet(title="Additional Info", rows="1000", cols="20")
+# Function to open or create a worksheet
+def open_or_create_sheet(sheet, title, rows=1000, cols=20):
+    try:
+        worksheet = sheet.worksheet(title)
+    except gspread.WorksheetNotFound:
+        worksheet = sheet.add_worksheet(title=title, rows=str(rows), cols=str(cols))
+    return worksheet
+
+# Function to update worksheet with DataFrame data
+def update_sheet_with_df(worksheet, df):
+    worksheet.clear()  # Clear the worksheet before updating
+    worksheet.update([df.columns.values.tolist()] + df.fillna("").values.tolist())
+
+# Open the additional info worksheet
+additional_info_sheet = open_or_create_sheet(sheet, "Additional Info")
 
 # Get Open Interest (OI) data from NSE for NIFTY
 oi_data_nifty, ltp_nifty, crontime_nifty = oi_chain_builder("NIFTY", "latest", "full")
@@ -37,15 +50,11 @@ oi_data_nifty, ltp_nifty, crontime_nifty = oi_chain_builder("NIFTY", "latest", "
 # Convert NIFTY OI data into a DataFrame
 oi_data_nifty_df = pd.DataFrame(oi_data_nifty)
 
-# Add or open a new sheet for NIFTY OI data
-try:
-    nifty_sheet = sheet.worksheet("NIFTY OI Data")
-except gspread.WorksheetNotFound:
-    nifty_sheet = sheet.add_worksheet(title="NIFTY OI Data", rows="1000", cols="20")
+# Open or create a new sheet for NIFTY OI data
+nifty_sheet = open_or_create_sheet(sheet, "NIFTY OI Data")
 
 # Upload NIFTY OI data to its dedicated sheet
-nifty_sheet.clear()  # Clear the worksheet before updating
-nifty_sheet.update([oi_data_nifty_df.columns.values.tolist()] + oi_data_nifty_df.fillna("").values.tolist())
+update_sheet_with_df(nifty_sheet, oi_data_nifty_df)
 
 # Print NIFTY OI data, LTP, and CronTime
 print("NIFTY OI Data:")
@@ -59,15 +68,11 @@ oi_data_banknifty, ltp_banknifty, crontime_banknifty = oi_chain_builder("BANKNIF
 # Convert BANKNIFTY OI data into a DataFrame
 oi_data_banknifty_df = pd.DataFrame(oi_data_banknifty)
 
-# Add or open a new sheet for BANKNIFTY OI data
-try:
-    banknifty_sheet = sheet.worksheet("BANKNIFTY OI Data")
-except gspread.WorksheetNotFound:
-    banknifty_sheet = sheet.add_worksheet(title="BANKNIFTY OI Data", rows="1000", cols="20")
+# Open or create a new sheet for BANKNIFTY OI data
+banknifty_sheet = open_or_create_sheet(sheet, "BANKNIFTY OI Data")
 
 # Upload BANKNIFTY OI data to its dedicated sheet
-banknifty_sheet.clear()  # Clear the worksheet before updating
-banknifty_sheet.update([oi_data_banknifty_df.columns.values.tolist()] + oi_data_banknifty_df.fillna("").values.tolist())
+update_sheet_with_df(banknifty_sheet, oi_data_banknifty_df)
 
 # Print BANKNIFTY OI data, LTP, and CronTime
 print("BANKNIFTY OI Data:")
@@ -84,4 +89,3 @@ additional_info_sheet.update([
 ])
 
 print("Data saved to Google Sheets successfully!")
-
