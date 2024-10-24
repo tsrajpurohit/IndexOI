@@ -7,7 +7,7 @@ from nsepython import *
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 
 # Load credentials from the JSON file
-credentials = ServiceAccountCredentials.from_json_keyfile_name("https://drive.google.com/file/d/1Tf7GuZMWNQ5J4P38gNLmrtqVY_E6YgBC/view?usp=sharing", scope)
+credentials = ServiceAccountCredentials.from_json_keyfile_name("https://drive.google.com/file/d/1Tf7GuZMWNQ5J4P38gNLmrtqVY_E6YgBC/edit", scope)
 
 # Authorize the client
 client = gspread.authorize(credentials)
