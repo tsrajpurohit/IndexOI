@@ -13,9 +13,9 @@ load_dotenv()
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 
 # Get the credentials from the environment variable
-credentials_json = os.environ.get('GOOGLE_SHEET_CREDENTIALS')
+credentials_json = os.environ.get('GOOGLE_SHEETS_CREDENTIALS')
 if credentials_json is None:
-    raise ValueError("No credentials found. Please set the GOOGLE_SHEET_CREDENTIALS environment variable.")
+    raise ValueError("No credentials found. Please set the GOOGLE_SHEETS_CREDENTIALS environment variable.")
 
 # Load credentials from the JSON string
 credentials = ServiceAccountCredentials.from_json_keyfile_dict(json.loads(credentials_json), scope)
