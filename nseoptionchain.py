@@ -9,10 +9,10 @@ scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/au
 
 # Load credentials from environment variable
 # You should store your Google API credentials file path in an environment variable
-credentials_path = os.getenv('GOOGLE_CREDENTIALS_PATH')
+credentials_path = os.getenv('GOOGLE_SHEETS_CREDENTIALS')
 
 if not credentials_path:
-    raise ValueError("Google API credentials path not found. Set the 'GOOGLE_CREDENTIALS_PATH' environment variable.")
+    raise ValueError("Google API credentials path not found. Set the 'GOOGLE_SHEETS_CREDENTIALS' environment variable.")
 
 credentials = ServiceAccountCredentials.from_json_keyfile_name(credentials_path, scope)
 
