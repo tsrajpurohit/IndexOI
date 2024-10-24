@@ -2,4 +2,4 @@ gspread
 oauth2client
 pandas
 nsepython
-dotenv
+python-dotenv
