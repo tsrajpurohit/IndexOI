@@ -25,9 +25,9 @@ jobs:
       - name: Set up Google credentials
         run: |
           echo "$GOOGLE_CREDENTIALS_JSON" > credentials.json
-          export GOOGLE_CREDENTIALS_PATH=$PWD/credentials.json
+          export GOOGLE_SHEETS_CREDENTIALS=$PWD/credentials.json
         env:
-          GOOGLE_SHEETS_CREDENTIALS: ${{ secrets.GOOGLE_SHEETS_CREDENTIALS }}
+          GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_SHEETS_CREDENTIALS }}
 
       - name: Run the Python script
         run: |
