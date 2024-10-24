@@ -9,7 +9,7 @@ import requests
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 
 # Google Drive link to the credentials.json file (direct download link)
-credentials_link = "https://drive.google.com/uc?id=1Tf7GuZMWNQ5J4P38gNLmrtqVY_E6YgBC"
+credentials_link = "credentials.json"
 
 # Function to fetch JSON data from Google Drive
 def fetch_credentials(link):
