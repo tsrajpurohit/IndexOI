@@ -4,7 +4,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 import pandas as pd
 from nsepython import *
 import logging
-
+ 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
