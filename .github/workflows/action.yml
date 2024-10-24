@@ -10,17 +10,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the code from the repository
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # Set up the Python environment
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.9'  # Specify a consistent version like 3.9
+          python-version: '3.9'
 
-      # Cache pip dependencies to make future runs faster
       - name: Cache dependencies
         uses: actions/cache@v2
         with:
@@ -29,20 +26,18 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
-      # Install Python dependencies from requirements.txt
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
 
-      # Set up Google Sheets credentials using GitHub Secrets
+      # Set up Google Sheets credentials from the secret
       - name: Set up Google credentials
         run: |
-          echo "$GOOGLE_SHEETS_CREDENTIALS" > credentials.json
-          export GOOGLE_SHEETS_CREDENTIALS=$PWD/credentials.json
+          echo "${{ secrets.GOOGLE_SHEETS_CREDENTIALS }}" > credentials.json
+
+      # Run the Python script and ensure credentials path is set properly
+      - name: Run the Python script
         env:
           GOOGLE_SHEETS_CREDENTIALS: ${{ secrets.GOOGLE_SHEETS_CREDENTIALS }}
-
-      # Run the Python script
-      - name: Run the Python script
         run: |
           python nseoptionchain.py
