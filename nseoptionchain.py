@@ -3,13 +3,15 @@ from oauth2client.service_account import ServiceAccountCredentials
 import pandas as pd
 from nsepython import *
 import os
+import json
 
 # Define the scope for Google Sheets API
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 
 # Load credentials from environment variable
 # You should store your Google API credentials file path in an environment variable
-credentials_path = os.getenv('GOOGLE_SHEETS_CREDENTIALS')
+credentials_path = "credentials.json"  # Fixed to use the correct file path
+
 
 if not credentials_path:
     raise ValueError("Google API credentials path not found. Set the 'GOOGLE_SHEETS_CREDENTIALS' environment variable.")
