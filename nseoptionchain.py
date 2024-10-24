@@ -17,16 +17,26 @@ def download_credentials(link, filename):
     if response.status_code == 200:
         with open(filename, 'wb') as f:
             f.write(response.content)
+        print(f"Downloaded credentials to {filename}")
     else:
-        raise ValueError("Failed to download the credentials file. Status code: {}".format(response.status_code))
+        raise ValueError(f"Failed to download the credentials file. Status code: {response.status_code}")
 
 # Download the credentials
 credentials_path = 'credentials.json'
 download_credentials(credentials_link, credentials_path)
 
+# Check the contents of the downloaded file
+with open(credentials_path, 'r') as f:
+    file_content = f.read()
+    print("Contents of credentials.json:")
+    print(file_content)  # Print file contents for debugging
+
 # Authorize the client
 credentials = ServiceAccountCredentials.from_json_keyfile_name(credentials_path, scope)
 client = gspread.authorize(credentials)
+
+# The rest of your code continues...
+
 
 # Create or open the Google Sheet
 sheet_name = "Pankaj_Power"
