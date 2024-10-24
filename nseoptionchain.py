@@ -6,7 +6,7 @@ import os
 import json
 import logging
 
-# Set up logging
+# Set up loggin
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
