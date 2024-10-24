@@ -2,7 +2,7 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import pandas as pd
 from nsepython import *
-import os
+import json
 import requests
 
 # Define the scope for Google Sheets API
@@ -11,31 +11,20 @@ scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/au
 # Google Drive link to the credentials.json file (direct download link)
 credentials_link = "https://drive.google.com/uc?id=1Tf7GuZMWNQ5J4P38gNLmrtqVY_E6YgBC"
 
-# Download the credentials.json file
-def download_credentials(link, filename):
+# Function to fetch JSON data from Google Drive
+def fetch_credentials(link):
     response = requests.get(link)
     if response.status_code == 200:
-        with open(filename, 'wb') as f:
-            f.write(response.content)
-        print(f"Downloaded credentials to {filename}")
+        return response.json()  # Load and return JSON data
     else:
-        raise ValueError(f"Failed to download the credentials file. Status code: {response.status_code}")
+        raise ValueError(f"Failed to fetch the credentials file. Status code: {response.status_code}")
 
-# Download the credentials
-credentials_path = 'credentials.json'
-download_credentials(credentials_link, credentials_path)
-
-# Check the contents of the downloaded file
-with open(credentials_path, 'r') as f:
-    file_content = f.read()
-    print("Contents of credentials.json:")
-    print(file_content)  # Print file contents for debugging
+# Fetch the credentials
+credentials_data = fetch_credentials(credentials_link)
 
 # Authorize the client
-credentials = ServiceAccountCredentials.from_json_keyfile_name(credentials_path, scope)
+credentials = ServiceAccountCredentials.from_json_keyfile_dict(credentials_data, scope)
 client = gspread.authorize(credentials)
-
-# The rest of your code continues...
 
 
 # Create or open the Google Sheet
