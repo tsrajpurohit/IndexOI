@@ -1,43 +1,14 @@
-name: Run NSE Option Chain Script
-
-on:
-  push:
-    branches:
-      - main
-
 jobs:
-  run-script:
+  build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.9'
+      - name: Set up environment
+        run: echo "${{ secrets.CREDENTIALS_JSON }}" > credentials.json
 
-      - name: Cache dependencies
-        uses: actions/cache@v2
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-
-      - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
-
-      # Set up Google Sheets credentials from the secret
-      - name: Set up Google credentials
-        run: |
-          echo "${{ secrets.GOOGLE_SHEETS_CREDENTIALS }}" > credentials.json
-
-      # Run the Python script and ensure credentials path is set properly
-      - name: Run the Python script
+      - name: Run script
+        run: python nseoptionchain.py
         env:
-          GOOGLE_SHEETS_CREDENTIALS: ${{ secrets.GOOGLE_SHEETS_CREDENTIALS }}
-        run: |
-          python nseoptionchain.py
+         GOOGLE_SHEETS_CREDENTIALS: credentials.json
