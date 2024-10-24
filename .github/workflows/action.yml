@@ -33,6 +33,7 @@ jobs:
           python nseoptionchain.py
         env:
             GOOGLE_SHEETS_CREDENTIALS: ${{ secrets.GOOGLE_SHEETS_CREDENTIALS }}
+            GOOGLE_CREDENTIALS_PATH: ${{ secrets.GOOGLE_CREDENTIALS_PATH }}
         
       - name: List files after running script
         run: |
