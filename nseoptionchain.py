@@ -1,27 +1,28 @@
+from dotenv import load_dotenv
 import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 import pandas as pd
+from nsepython import *
 import json
 import os
-from oauth2client.service_account import ServiceAccountCredentials
-from nsepython import *
-from dotenv import load_dotenv
-
-# Load environment variables from .env file (if you're using it locally)
-load_dotenv()
 
 # Define the scope for Google Sheets API
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 
-# Get the credentials from the environment variable
-credentials_json = os.environ.get('GOOGLE_SHEETS_CREDENTIALS')
-if credentials_json is None:
+# Load credentials from the environment variable
+credentials_json = os.getenv('GOOGLE_SHEETS_CREDENTIALS')
+
+if not credentials_json:
     raise ValueError("No credentials found. Please set the GOOGLE_SHEETS_CREDENTIALS environment variable.")
 
-# Load credentials from the JSON string
-credentials = ServiceAccountCredentials.from_json_keyfile_dict(json.loads(credentials_json), scope)
+try:
+    credentials = ServiceAccountCredentials.from_json_keyfile_dict(json.loads(credentials_json), scope)
+except json.JSONDecodeError as e:
+    raise ValueError(f"Failed to parse JSON from GOOGLE_SHEET_CREDENTIALS: {e}")
 
 # Authorize the client
 client = gspread.authorize(credentials)
+
 
 # Create or open the Google Sheet
 try:
