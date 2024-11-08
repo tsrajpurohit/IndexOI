@@ -1,3 +1,4 @@
+import time
 from dotenv import load_dotenv
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
@@ -29,73 +30,55 @@ try:
 except gspread.SpreadsheetNotFound:
     sheet = client.create("Pankaj_Power")
 
-# Open the first sheet (worksheet) for additional info
+# Open or create additional info sheet
 try:
     additional_info_sheet = sheet.worksheet("Additional Info")
 except gspread.WorksheetNotFound:
     additional_info_sheet = sheet.add_worksheet(title="Additional Info", rows="1000", cols="20")
 
-# Get Open Interest (OI) data from NSE for NIFTY
-oi_data_nifty, ltp_nifty, crontime_nifty = oi_chain_builder("NIFTY", "latest", "full")
-oi_data_nifty_df = pd.DataFrame(oi_data_nifty)
+def fetch_and_update_data():
+    # Get Open Interest (OI) data for NIFTY
+    oi_data_nifty, ltp_nifty, crontime_nifty = oi_chain_builder("NIFTY", "latest", "full")
+    oi_data_nifty_df = pd.DataFrame(oi_data_nifty)
+    try:
+        nifty_sheet = sheet.worksheet("NIFTY OI Data")
+    except gspread.WorksheetNotFound:
+        nifty_sheet = sheet.add_worksheet(title="NIFTY OI Data", rows="1000", cols="20")
+    nifty_sheet.clear()
+    nifty_sheet.update([oi_data_nifty_df.columns.values.tolist()] + oi_data_nifty_df.fillna("").values.tolist())
 
-# Add or open a new sheet for NIFTY OI data
-try:
-    nifty_sheet = sheet.worksheet("NIFTY OI Data")
-except gspread.WorksheetNotFound:
-    nifty_sheet = sheet.add_worksheet(title="NIFTY OI Data", rows="1000", cols="20")
+    # Get OI data for BANKNIFTY
+    oi_data_banknifty, ltp_banknifty, crontime_banknifty = oi_chain_builder("BANKNIFTY", "latest", "full")
+    oi_data_banknifty_df = pd.DataFrame(oi_data_banknifty)
+    try:
+        banknifty_sheet = sheet.worksheet("BANKNIFTY OI Data")
+    except gspread.WorksheetNotFound:
+        banknifty_sheet = sheet.add_worksheet(title="BANKNIFTY OI Data", rows="1000", cols="20")
+    banknifty_sheet.clear()
+    banknifty_sheet.update([oi_data_banknifty_df.columns.values.tolist()] + oi_data_banknifty_df.fillna("").values.tolist())
 
-nifty_sheet.clear()
-nifty_sheet.update([oi_data_nifty_df.columns.values.tolist()] + oi_data_nifty_df.fillna("").values.tolist())
+    # Get OI data for FINNIFTY
+    oi_data_finnifty, ltp_finnifty, crontime_finnifty = oi_chain_builder("FINNIFTY", "latest", "full")
+    oi_data_finnifty_df = pd.DataFrame(oi_data_finnifty)
+    try:
+        finnifty_sheet = sheet.worksheet("FINNIFTY OI Data")
+    except gspread.WorksheetNotFound:
+        finnifty_sheet = sheet.add_worksheet(title="FINNIFTY OI Data", rows="1000", cols="20")
+    finnifty_sheet.clear()
+    finnifty_sheet.update([oi_data_finnifty_df.columns.values.tolist()] + oi_data_finnifty_df.fillna("").values.tolist())
 
-print("NIFTY OI Data:")
-print(oi_data_nifty)
-print("LTP NIFTY:", ltp_nifty)
-print("CronTime NIFTY:", crontime_nifty)
+    # Update additional info with LTP and CronTime
+    additional_info_sheet.clear()
+    additional_info_sheet.update([
+        ["Index", "LTP", "CronTime"],
+        ["NIFTY", ltp_nifty, crontime_nifty],
+        ["BANKNIFTY", ltp_banknifty, crontime_banknifty],
+        ["FINNIFTY", ltp_finnifty, crontime_finnifty]
+    ])
 
-# Get Open Interest (OI) data from NSE for BANKNIFTY
-oi_data_banknifty, ltp_banknifty, crontime_banknifty = oi_chain_builder("BANKNIFTY", "latest", "full")
-oi_data_banknifty_df = pd.DataFrame(oi_data_banknifty)
+    print("Data saved to Google Sheets successfully!")
 
-# Add or open a new sheet for BANKNIFTY OI data
-try:
-    banknifty_sheet = sheet.worksheet("BANKNIFTY OI Data")
-except gspread.WorksheetNotFound:
-    banknifty_sheet = sheet.add_worksheet(title="BANKNIFTY OI Data", rows="1000", cols="20")
-
-banknifty_sheet.clear()
-banknifty_sheet.update([oi_data_banknifty_df.columns.values.tolist()] + oi_data_banknifty_df.fillna("").values.tolist())
-
-print("BANKNIFTY OI Data:")
-print(oi_data_banknifty)
-print("LTP BANKNIFTY:", ltp_banknifty)
-print("CronTime BANKNIFTY:", crontime_banknifty)
-
-# Get Open Interest (OI) data from NSE for FINNIFTY
-oi_data_finnifty, ltp_finnifty, crontime_finnifty = oi_chain_builder("FINNIFTY", "latest", "full")
-oi_data_finnifty_df = pd.DataFrame(oi_data_finnifty)
-
-# Add or open a new sheet for FINNIFTY OI data
-try:
-    finnifty_sheet = sheet.worksheet("FINNIFTY OI Data")
-except gspread.WorksheetNotFound:
-    finnifty_sheet = sheet.add_worksheet(title="FINNIFTY OI Data", rows="1000", cols="20")
-
-finnifty_sheet.clear()
-finnifty_sheet.update([oi_data_finnifty_df.columns.values.tolist()] + oi_data_finnifty_df.fillna("").values.tolist())
-
-print("FINNIFTY OI Data:")
-print(oi_data_finnifty)
-print("LTP FINNIFTY:", ltp_finnifty)
-print("CronTime FINNIFTY:", crontime_finnifty)
-
-# Clear and update additional info like LTP and CronTime for NIFTY, BANKNIFTY, and FINNIFTY
-additional_info_sheet.clear()
-additional_info_sheet.update([
-    ["Index", "LTP", "CronTime"],
-    ["NIFTY", ltp_nifty, crontime_nifty],
-    ["BANKNIFTY", ltp_banknifty, crontime_banknifty],
-    ["FINNIFTY", ltp_finnifty, crontime_finnifty]
-])
-
-print("Data saved to Google Sheets successfully!")
+# Fetch data 3 times with a 3-minute interval
+for _ in range(3):
+    fetch_and_update_data()
+    time.sleep(180)  # Wait for 3 minutes (180 seconds) before the next fetch
