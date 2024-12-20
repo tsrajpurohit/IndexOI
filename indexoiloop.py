@@ -1,5 +1,5 @@
 import time
-from datetime import datetime, timedelta
+from datetime import datetime
 from dotenv import load_dotenv
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
@@ -79,25 +79,15 @@ def fetch_and_update_data():
 
     print("Data saved to Google Sheets successfully!")
 
-# Run the fetch-and-update process every 3 minutes from 9:15 AM to 3:30 PM
+# Schedule the script to run every 5 minutes between 9:15 AM and 3:40 PM
 start_time = datetime.strptime("09:15", "%H:%M").time()
-end_time = datetime.strptime("15:30", "%H:%M").time()
-
-print("Starting the process...")
+end_time = datetime.strptime("15:40", "%H:%M").time()
 
 while True:
     current_time = datetime.now().time()
     if start_time <= current_time <= end_time:
-        try:
-            print(f"Fetching data at {datetime.now().strftime('%H:%M:%S')}...")
-            fetch_and_update_data()
-        except Exception as e:
-            print(f"Error during fetch: {e}")
-        time.sleep(180)  # Wait for 3 minutes
-    elif current_time > end_time:
-        print("Trading hours over. Stopping the process.")
-        break
+        fetch_and_update_data()
+        time.sleep(300)  # Wait for 5 minutes (300 seconds)
     else:
-        time_to_start = datetime.combine(datetime.today(), start_time) - datetime.now()
-        print(f"Waiting for market to open. Starts in {time_to_start.seconds // 60} minutes.")
-        time.sleep(60)  # Check every minute if it's past 9:15
+        print("Outside of scheduled time. Waiting to start...")
+        time.sleep(60)  # Check every minute if within the time range
