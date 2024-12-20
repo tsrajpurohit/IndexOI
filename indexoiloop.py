@@ -86,8 +86,10 @@ end_time = datetime.strptime("15:40", "%H:%M").time()
 while True:
     current_time = datetime.now().time()
     if start_time <= current_time <= end_time:
+        print(f"Fetching data at {datetime.now().strftime('%H:%M:%S')}")
         fetch_and_update_data()
-        time.sleep(300)  # Wait for 5 minutes (300 seconds)
+        print("Waiting for the next iteration...")
+        time.sleep(300)  # Wait for 5 minutes
     else:
-        print("Outside of scheduled time. Waiting to start...")
+        print("Outside of scheduled time. Checking again in 1 minute...")
         time.sleep(60)  # Check every minute if within the time range
