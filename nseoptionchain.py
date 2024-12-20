@@ -77,3 +77,8 @@ def fetch_and_update_data():
     ])
 
     print("Data saved to Google Sheets successfully!")
+
+# Fetch data 3 times with a 3-minute interval
+for _ in range(3):
+    fetch_and_update_data()
+    time.sleep(180)  # Wait for 3 minutes (180 seconds) before the next fetch                               
